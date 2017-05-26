@@ -36,8 +36,9 @@ class PurchaseTicketsTest extends TestCase
     public function customer_can_purchase_concert_tickets()
     {
         // Arrange
+        /** @var App\Concert $concert */
         $concert = factory(Concert::class)->states('published')->create(['ticket_price' => 3250]);
-        
+        $concert->addTickets(3);
         // Act
         $this->orderTickets($concert, [
             'email'           => 'john@example.com',
