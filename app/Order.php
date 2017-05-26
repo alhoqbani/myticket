@@ -12,4 +12,13 @@ class Order extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+    
+    public function cancel()
+    {
+        /** @var \App\Ticket $ticket */
+        foreach($this->tickets as $ticket) {
+            $ticket->update(['order_id' => null]);
+        }
+        $this->delete();
+    }
 }

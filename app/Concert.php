@@ -35,6 +35,12 @@ class Concert extends Model
         return $this->hasMany(Order::class);
     }
     
+    /**
+     * @param $email
+     * @param $ticketQuantity
+     * @var \App\Order $order
+     * @return \App\Order
+     */
     public function orderTickets($email, $ticketQuantity)
     {
         $tickets = $this->tickets()->available()->take($ticketQuantity)->get();
@@ -43,7 +49,7 @@ class Concert extends Model
             throw new NotEnoughTicketsException;
         }
         $order = $this->orders()->create(['email' => $email]);
-    
+        
         foreach($tickets as $ticket) {
             $order->tickets()->save($ticket);
         }
