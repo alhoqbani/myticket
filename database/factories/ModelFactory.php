@@ -37,6 +37,7 @@ $factory->define(App\Concert::class, function (Faker\Generator $faker) {
         'state' => 'ON',
         'zip' => '90210',
         'additional_information' => 'Some sample additional information.',
+//        'published_at' => Carbon::parse('-1 week'),
     ];
 });
 

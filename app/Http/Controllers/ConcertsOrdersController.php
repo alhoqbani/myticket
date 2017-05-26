@@ -22,7 +22,7 @@ class ConcertsOrdersController extends Controller
         $this->paymentGateway = $paymentGateway;
     }
     
-    public function store(Concert $concert, Request $request)
+    public function store(Concert $publishedConcert, Request $request)
     {
         $this->validate($request, [
             'email' => ['required', 'email'],
@@ -30,8 +30,8 @@ class ConcertsOrdersController extends Controller
             'payment_token' => ['required'],
         ]);
         try {
-            $this->paymentGateway->charge(request('ticket_quantity') * $concert->ticket_price, request('payment_token'));
-            $order = $concert->orderTickets(request()->email, request('ticket_quantity'));
+            $this->paymentGateway->charge(request('ticket_quantity') * $publishedConcert->ticket_price, request('payment_token'));
+            $order = $publishedConcert->orderTickets(request()->email, request('ticket_quantity'));
     
             return response()->json('', 201);
         } catch (PaymentFailedException $e) {
