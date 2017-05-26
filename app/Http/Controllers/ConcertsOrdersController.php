@@ -21,8 +21,11 @@ class ConcertsOrdersController extends Controller
         $this->paymentGateway = $paymentGateway;
     }
     
-    public function store(Concert $concert)
+    public function store(Concert $concert, Request $request)
     {
+        $this->validate($request, [
+            'email' => 'required',
+        ]);
         $this->paymentGateway->charge(request('ticket_quantity') * $concert->ticket_price, request('payment_token'));
         $order = $concert->orderTickets(request()->email, request('ticket_quantity'));
         
