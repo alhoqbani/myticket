@@ -9,7 +9,10 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class PurchaseTicketsTest extends TestCase
 {
+    
     use DatabaseMigrations;
+    
+    protected $paymentGateway;
     
     protected function setUp()
     {
@@ -57,7 +60,7 @@ class PurchaseTicketsTest extends TestCase
     {
 //        $this->disableExceptionHandling();
         $concert = factory(Concert::class)->states('unpublished')->create();
-    
+        
         $this->orderTickets($concert, [
             'email'           => 'jane@example.com',
             'ticket_quantity' => 3,
@@ -150,5 +153,24 @@ class PurchaseTicketsTest extends TestCase
         $this->assertResponseStatus(422);
         $order = $concert->orders()->where('email', 'john@example.com')->first();
         $this->assertNull($order);
+    }
+    
+    /** @test */
+    public function cannot_purchase_more_tickets_than_remain()
+    {
+        $concert = factory(Concert::class)->states('published')->create();
+        $concert->addTickets(50);
+        $this->orderTickets($concert, [
+            'email'           => 'john@example.com',
+            'ticket_quantity' => 52,
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
+        ]);
+    
+        $this->assertResponseStatus(422);
+        $order = $concert->orders()->where('email', 'john@example.com')->first();
+        $this->assertNull($order);
+        $this->assertEquals(0, $this->paymentGateway->totalCharges());
+        $this->assertEquals(50, $concert->ticketsRemaining());
+    
     }
 }
