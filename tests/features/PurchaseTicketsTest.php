@@ -59,8 +59,9 @@ class PurchaseTicketsTest extends TestCase
     /** @test */
     public function cannot_purchase_unpublished_concert()
     {
-//        $this->disableExceptionHandling();
+        /** @var App\Concert $concert */
         $concert = factory(Concert::class)->states('unpublished')->create();
+        $concert->addTickets(3);
         
         $this->orderTickets($concert, [
             'email'           => 'jane@example.com',
@@ -159,6 +160,7 @@ class PurchaseTicketsTest extends TestCase
     /** @test */
     public function cannot_purchase_more_tickets_than_remain()
     {
+        $this->disableExceptionHandling();
         $concert = factory(Concert::class)->states('published')->create();
         $concert->addTickets(50);
         $this->orderTickets($concert, [
