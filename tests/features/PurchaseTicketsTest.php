@@ -118,4 +118,20 @@ class PurchaseTicketsTest extends TestCase
         
         $this->assertValidationError('payment_token');
     }
+    
+    /** @test */
+    public function an_order_is_not_created_if_payment_failed()
+    {
+        $this->disableExceptionHandling();
+        $concert = factory(Concert::class)->create();
+        $this->orderTickets($concert, [
+            'email' => 'john@example.com',
+            'ticket_quantity' => 1,
+            'payment_token' => 'not-valid-token',
+        ]);
+        
+        $this->assertResponseStatus(422);
+        $order = $concert->orders()->where('email', 'john@example.com')->first();
+        $this->assertNull($order);
+    }
 }
