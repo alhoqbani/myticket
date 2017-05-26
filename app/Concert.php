@@ -7,24 +7,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Concert extends Model
 {
+    
     protected $guarded = [];
     protected $dates = ['date'];
-
+    
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at');
     }
-
+    
     public function getFormattedDateAttribute()
     {
         return $this->date->format('F j, Y');
     }
-
+    
     public function getFormattedStartTimeAttribute()
     {
         return $this->date->format('g:ia');
     }
-
+    
     public function getTicketPriceInDollarsAttribute()
     {
         return number_format($this->ticket_price / 100, 2);
@@ -36,8 +37,9 @@ class Concert extends Model
     }
     
     /**
-     * @param $email
-     * @param $ticketQuantity
+     * @param          $email
+     * @param          $ticketQuantity
+     *
      * @var \App\Order $order
      * @return \App\Order
      */
@@ -50,18 +52,21 @@ class Concert extends Model
         }
         $order = $this->orders()->create(['email' => $email]);
         
-        foreach($tickets as $ticket) {
+        foreach ($tickets as $ticket) {
             $order->tickets()->save($ticket);
         }
+        
         return $order;
     }
     
     public function addTickets($quantity)
     {
-        foreach(range(1, $quantity) as $i) {
+        foreach (range(1, $quantity) as $i) {
             $this->tickets()->create([]);
         }
-    
+        
+        return $this;
+        
     }
     
     public function ticketsRemaining()
@@ -72,5 +77,15 @@ class Concert extends Model
     public function tickets()
     {
         return $this->hasMany(Ticket::class);
+    }
+    
+    public function hasOrderFor($customerEmail)
+    {
+        return $this->orders()->where('email', 'john@example.com')->count() > 0;
+    }
+    
+    public function ordersFor($customerEmail)
+    {
+        return $this->orders()->whereEmail($customerEmail)->get();
     }
 }

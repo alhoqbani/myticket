@@ -1,29 +1,17 @@
 <?php
 
-namespace Tests\Unit;
-
-use App\Concert;
 use App\Order;
-use TestCase;
+use App\Concert;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 
-/**
- * Class OrderTest
- *
- * @package Tests\Feature
- */
 class OrderTest extends TestCase
 {
-    
     use DatabaseMigrations;
     
     /** @test */
     public function tickets_are_released_when_an_order_is_cancelled()
     {
-        
-        /** @var \App\Concert $concert */
-        $concert = factory(Concert::class)->create();
-        $concert->addTickets(10);
+        $concert = factory(Concert::class)->create()->addTickets(10);
         $order = $concert->orderTickets('jane@example.com', 5);
         $this->assertEquals(5, $concert->ticketsRemaining());
         
