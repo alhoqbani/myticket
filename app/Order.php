@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = ['email'];
+    protected $fillable = ['email', 'amount'];
     
     public function tickets()
     {
@@ -37,7 +37,7 @@ class Order extends Model
         return [
           'email' => $this->email,
           'ticket_quantity' => $this->ticketQuantity(),
-          'amount' => $this->ticketQuantity() * $this->concert->ticket_price,
+          'amount' => $this->amount,
         ];
     }
     
