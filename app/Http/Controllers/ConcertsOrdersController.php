@@ -31,14 +31,14 @@ class ConcertsOrdersController extends Controller
             'payment_token'   => ['required'],
         ]);
         try {
-            $order = $publishedConcert->orderTickets(request()->email, request('ticket_quantity'));
+            $tickets = $publishedConcert->findTickets(request('ticket_quantity'));
             $this->paymentGateway->charge(request('ticket_quantity') * $publishedConcert->ticket_price,
                 request('payment_token'));
-    
+            $order = $publishedConcert->createOrder(request('email'), $tickets);
+            
             return response()->json($order->toArray(), 201);
             
         } catch (PaymentFailedException $e) {
-            $order->cancel();
             return response()->json([], 422);
         } catch (NotEnoughTicketsException $e) {
             return response()->json('', 422);
