@@ -4,7 +4,10 @@ namespace App\Billing;
 
 class FakePaymentGateway implements PaymentGateway
 {
+    
     private $charges;
+    protected $beforeFirstChargeCallback;
+    
     /**
      * FakePaymentGateway constructor.
      */
@@ -20,7 +23,13 @@ class FakePaymentGateway implements PaymentGateway
     
     public function charge($amount, $token)
     {
-        if($token !== $this->getValidTestToken()) {
+        if ($this->beforeFirstChargeCallback !== null) {
+            $callBack = $this->beforeFirstChargeCallback;
+            $this->beforeFirstChargeCallback = null;
+            $callBack->__invoke($this);
+        }
+        
+        if ($token !== $this->getValidTestToken()) {
             throw new PaymentFailedException;
         }
         $this->charges[] = $amount;
@@ -29,5 +38,10 @@ class FakePaymentGateway implements PaymentGateway
     public function totalCharges()
     {
         return $this->charges->sum();
+    }
+    
+    public function beforeFirstCharge($callback)
+    {
+        $this->beforeFirstChargeCallback = $callback;
     }
 }
