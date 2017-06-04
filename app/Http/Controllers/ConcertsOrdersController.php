@@ -33,7 +33,7 @@ class ConcertsOrdersController extends Controller
             'payment_token'   => ['required'],
         ]);
         try {
-            $tickets = $publishedConcert->reservTickets(request('ticket_quantity'));
+            $tickets = $publishedConcert->reserveTickets(request('ticket_quantity'));
             $reservation = new Reservation($tickets);
             
             $this->paymentGateway->charge($reservation->totalCost(), request('payment_token'));

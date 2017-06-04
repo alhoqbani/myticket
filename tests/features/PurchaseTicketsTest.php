@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class PurchaseTicketsTest extends TestCase
 {
+    
     use DatabaseMigrations;
     
     protected function setUp()
@@ -20,7 +21,9 @@ class PurchaseTicketsTest extends TestCase
     
     private function orderTickets($concert, $params)
     {
+        $savedRequest = $this->app['request'];
         $this->json('POST', "/concerts/{$concert->id}/orders", $params);
+        $this->app['request'] = $savedRequest;
     }
     
     private function assertValidationError($field)
@@ -35,17 +38,17 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create(['ticket_price' => 3250])->addTickets(3);
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 3,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertResponseStatus(201);
         
         $this->seeJsonSubset([
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 3,
-            'amount' => 3250 * 3,
+            'amount'          => 3250 * 3,
         ]);
         
         $this->assertEquals(9750, $this->paymentGateway->totalCharges());
@@ -59,9 +62,9 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('unpublished')->create()->addTickets(3);
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 3,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertResponseStatus(404);
@@ -75,9 +78,9 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create(['ticket_price' => 3250])->addTickets(3);
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 3,
-            'payment_token' => 'invalid-payment-token',
+            'payment_token'   => 'invalid-payment-token',
         ]);
         
         $this->assertResponseStatus(422);
@@ -90,9 +93,9 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create()->addTickets(50);
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 51,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertResponseStatus(422);
@@ -108,7 +111,7 @@ class PurchaseTicketsTest extends TestCase
         
         $this->orderTickets($concert, [
             'ticket_quantity' => 3,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertValidationError('email');
@@ -120,9 +123,9 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create();
         
         $this->orderTickets($concert, [
-            'email' => 'not-an-email-address',
+            'email'           => 'not-an-email-address',
             'ticket_quantity' => 3,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertValidationError('email');
@@ -134,7 +137,7 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create();
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'         => 'john@example.com',
             'payment_token' => $this->paymentGateway->getValidTestToken(),
         ]);
         
@@ -147,9 +150,9 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create();
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 0,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertValidationError('ticket_quantity');
@@ -162,7 +165,7 @@ class PurchaseTicketsTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create();
         
         $this->orderTickets($concert, [
-            'email' => 'john@example.com',
+            'email'           => 'john@example.com',
             'ticket_quantity' => 3,
         ]);
         
@@ -174,14 +177,14 @@ class PurchaseTicketsTest extends TestCase
     {
         $this->disableExceptionHandling();
         $concert = factory(Concert::class)->states('published')->create([
-            'ticket_price' => 1200
+            'ticket_price' => 1200,
         ])->addTickets(3);
         
         $this->paymentGateway->beforeFirstCharge(function ($paymentGateway) use ($concert) {
             $this->orderTickets($concert, [
-                'email' => 'personB@example.com',
+                'email'           => 'personB@example.com',
                 'ticket_quantity' => 1,
-                'payment_token' => $this->paymentGateway->getValidTestToken(),
+                'payment_token'   => $this->paymentGateway->getValidTestToken(),
             ]);
             
             $this->assertResponseStatus(422);
@@ -190,9 +193,9 @@ class PurchaseTicketsTest extends TestCase
         });
         
         $this->orderTickets($concert, [
-            'email' => 'personA@example.com',
+            'email'           => 'personA@example.com',
             'ticket_quantity' => 3,
-            'payment_token' => $this->paymentGateway->getValidTestToken(),
+            'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
         
         $this->assertEquals(3600, $this->paymentGateway->totalCharges());
