@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    
     protected $fillable = ['email', 'amount'];
     
     public function tickets()
@@ -24,11 +25,11 @@ class Order extends Model
             'email'  => $email,
             'amount' => $amount,
         ]);
-    
+        
         foreach ($tickets as $ticket) {
             $order->tickets()->save($ticket);
         }
-    
+        
         return $order;
     }
     
@@ -40,9 +41,9 @@ class Order extends Model
     public function toArray()
     {
         return [
-          'email' => $this->email,
-          'ticket_quantity' => $this->ticketQuantity(),
-          'amount' => $this->amount,
+            'email'           => $this->email,
+            'ticket_quantity' => $this->ticketQuantity(),
+            'amount'          => $this->amount,
         ];
     }
     
