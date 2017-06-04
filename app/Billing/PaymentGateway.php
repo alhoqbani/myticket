@@ -11,5 +11,5 @@ namespace App\Billing;
 
 interface PaymentGateway
 {
-    public function charge($amoutn, $token);
+    public function charge($amount, $token);
 }
