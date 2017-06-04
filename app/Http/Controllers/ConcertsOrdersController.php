@@ -33,12 +33,11 @@ class ConcertsOrdersController extends Controller
             'payment_token'   => ['required'],
         ]);
         try {
-            $tickets = $publishedConcert->reserveTickets(request('ticket_quantity'));
-            $reservation = new Reservation($tickets);
+            $reservation = $publishedConcert->reserveTickets(request('ticket_quantity'), request('email'));
             
             $this->paymentGateway->charge($reservation->totalCost(), request('payment_token'));
 
-            $order = Order::forTickets($tickets, request('email'), $reservation->totalCost());
+            $order = Order::forTickets($reservation->tickets(), $reservation->email(), $reservation->totalCost());
 
             return response()->json($order->toArray(), 201);
             

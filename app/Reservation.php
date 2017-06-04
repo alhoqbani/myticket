@@ -6,9 +6,14 @@ use Illuminate\Support\Collection;
 
 class Reservation
 {
-    public function __construct(Collection $tickets)
+    
+    protected $email;
+    protected $tickets;
+    
+    public function __construct(Collection $tickets, $email)
     {
         $this->tickets = $tickets;
+        $this->email = $email;
     }
     
     public function cancel()
@@ -22,5 +27,15 @@ class Reservation
     public function totalCost()
     {
         return $this->tickets->sum('price');
+    }
+    
+    public function tickets()
+    {
+        return $this->tickets;
+    }
+    
+    public function email()
+    {
+        return $this->email;
     }
 }
