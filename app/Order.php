@@ -18,15 +18,6 @@ class Order extends Model
         return $this->belongsTo(Concert::class);
     }
     
-    public function cancel()
-    {
-        /** @var \App\Ticket $ticket */
-        foreach($this->tickets as $ticket) {
-            $ticket->release();
-        }
-        $this->delete();
-    }
-    
     public static function forTickets($tickets, $email, $amount)
     {
         $order = self::create([
