@@ -81,6 +81,12 @@ class Concert extends Model
         return $this->orders()->whereEmail($customerEmail)->get();
     }
     
+    public function reservTickets($quantity)
+    {
+        return $this->findTickets($quantity);
+    }
+    
+    
     /**
      * @param $quantity
      *

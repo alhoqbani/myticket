@@ -2,13 +2,14 @@
 
 namespace App;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Ticket extends Model
 {
     
-    protected $fillable = ['order_id'];
+    protected $fillable = ['order_id', 'reserved_at'];
     
     public function scopeAvailable(Builder $query)
     {
@@ -28,5 +29,10 @@ class Ticket extends Model
     public function getPriceAttribute()
     {
         return $this->concert->ticket_price;
+    }
+    
+    public function reserve()
+    {
+        $this->update(['reserved_at' => Carbon::now()]);
     }
 }

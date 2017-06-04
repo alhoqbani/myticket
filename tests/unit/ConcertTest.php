@@ -7,6 +7,7 @@ use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ConcertTest extends TestCase
 {
+    
     use DatabaseMigrations;
     
     /** @test */
@@ -116,5 +117,17 @@ class ConcertTest extends TestCase
         }
         
         $this->fail("Order succeeded even though there were not enough tickets remaining.");
+    }
+    
+    /** @test */
+    public function it_can_reserve_avaliable_tickets()
+    {
+        $concert = factory(Concert::class)->create()->addTickets(3);
+        $this->assertEquals(3, $concert->ticketsRemaining());
+        
+        $reservedTcikets = $concert->reservTickets(2);
+        
+        $this->assertCount(2, $reservedTcikets);
+        $this->assertEquals(1, $concert->ticketsRemaining());
     }
 }
