@@ -1,7 +1,7 @@
 <?php
 namespace App\Exceptions;
 
-use Psy\Exception\RuntimeException;
+use RuntimeException;
 
 class NotEnoughTicketsException extends RuntimeException
 {
