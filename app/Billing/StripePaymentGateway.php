@@ -2,7 +2,6 @@
 
 namespace App\Billing;
 
-use Illuminate\Database\Eloquent\Model;
 use Stripe\Charge;
 use Stripe\Error\InvalidRequest;
 use Stripe\Token;
@@ -51,12 +50,12 @@ class StripePaymentGateway implements PaymentGateway
         ], ['api_key' => $this->apiKey])->id;
     }
     
-    public function newChargesDuring(callable $charge)
+    public function newChargesDuring($charge)
     {
-        $lataestCharge = $this->lastCharge();
+        $latestCharge = $this->lastCharge();
         $charge($this);
         
-        return $this->newChargesSince($lataestCharge)->pluck('amount');
+        return $this->newChargesSince($latestCharge)->pluck('amount');
     }
     
     private function newChargesSince($lastCharge = null)
