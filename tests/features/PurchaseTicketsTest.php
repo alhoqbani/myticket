@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
-class PurchaseTicketsTest extends BrowserKitTestCase
+class PurchaseTicketsTest extends TestCase
 {
     
     use DatabaseMigrations;
@@ -16,6 +16,10 @@ class PurchaseTicketsTest extends BrowserKitTestCase
      * @var FakePaymentGateway
      */
     protected $paymentGateway;
+    /**
+     * @var \Illuminate\Foundation\Testing\TestResponse
+     */
+    private $response;
     
     protected function setUp()
     {
@@ -27,7 +31,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     private function orderTickets($concert, $params)
     {
         $savedRequest = $this->app['request'];
-        $this->json('POST', "/concerts/{$concert->id}/orders", $params);
+        $this->response = $this->json('POST', "/concerts/{$concert->id}/orders", $params);
         $this->app['request'] = $savedRequest;
     }
     
@@ -38,7 +42,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function customer_can_purchase_tickets_to_a_published_concert()
+    public function customer_can_purchase_tickets_to_a_published_concert()
     {
         $this->disableExceptionHandling();
         $concert = factory(Concert::class)->states(['published'])->create(['ticket_price' => 3250])->addTickets(3);
@@ -63,7 +67,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function cannot_purchase_tickets_to_an_unpublished_concert()
+    public function cannot_purchase_tickets_to_an_unpublished_concert()
     {
         $concert = factory(Concert::class)->states('unpublished')->create()->addTickets(3);
         
@@ -79,7 +83,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function an_order_is_not_created_if_payment_fails()
+    public function an_order_is_not_created_if_payment_fails()
     {
         $concert = factory(Concert::class)->states('published')->create(['ticket_price' => 3250])->addTickets(3);
         
@@ -95,7 +99,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function cannot_purchase_more_tickets_than_remain()
+    public function cannot_purchase_more_tickets_than_remain()
     {
         $concert = factory(Concert::class)->states('published')->create()->addTickets(50);
         
@@ -112,7 +116,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function email_is_required_to_purchase_tickets()
+    public function email_is_required_to_purchase_tickets()
     {
         $concert = factory(Concert::class)->states('published')->create();
         
@@ -125,7 +129,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function email_must_be_valid_to_purchase_tickets()
+    public function email_must_be_valid_to_purchase_tickets()
     {
         $concert = factory(Concert::class)->states('published')->create();
         
@@ -139,7 +143,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function ticket_quantity_is_required_to_purchase_tickets()
+    public function ticket_quantity_is_required_to_purchase_tickets()
     {
         $concert = factory(Concert::class)->states('published')->create();
         
@@ -152,7 +156,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function ticket_quantity_must_be_at_least_1_to_purchase_tickets()
+    public function ticket_quantity_must_be_at_least_1_to_purchase_tickets()
     {
         $concert = factory(Concert::class)->states('published')->create();
         
@@ -166,9 +170,8 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function payment_token_is_required()
+    public function payment_token_is_required()
     {
-        
         $concert = factory(Concert::class)->states('published')->create();
         
         $this->orderTickets($concert, [
@@ -180,7 +183,7 @@ class PurchaseTicketsTest extends BrowserKitTestCase
     }
     
     /** @test */
-    function cannot_purchase_tickets_another_customer_is_already_trying_to_purchase()
+    public function cannot_purchase_tickets_another_customer_is_already_trying_to_purchase()
     {
         $this->disableExceptionHandling();
         /** @var \App\Concert $concert */
@@ -205,10 +208,24 @@ class PurchaseTicketsTest extends BrowserKitTestCase
             'ticket_quantity' => 3,
             'payment_token'   => $this->paymentGateway->getValidTestToken(),
         ]);
-
+        
         $this->assertEquals(3600, $this->paymentGateway->totalCharges());
         $this->assertTrue($concert->hasOrderFor('personA@example.com'));
         $this->assertEquals(3, $concert->ordersFor('personA@example.com')->first()->ticketQuantity());
     }
     
+    private function assertResponseStatus($status)
+    {
+        return $this->response->assertStatus($status);
+    }
+    
+    private function seeJsonSubset($array)
+    {
+        return $this->response->assertJson($array);
+    }
+    
+    private function decodeResponseJson()
+    {
+        return $this->response->decodeResponseJson();
+    }
 }
