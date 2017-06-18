@@ -33,8 +33,7 @@ class StripePaymentGateway implements PaymentGateway
                 "source"   => $token,
             ], ["api_key" => $this->apiKey]);
         } catch (InvalidRequest $exception) {
-            return false;
-//            throw new PaymentFailedException($exception->getMessage());
+            throw new PaymentFailedException($exception->getMessage());
         }
     }
     
